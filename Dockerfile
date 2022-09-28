@@ -1,6 +1,9 @@
 # syntax = docker/dockerfile:1.3
 
 ARG BASE_IMAGE=eclipse-temurin:17-jre-focal
+
+FROM ghcr.io/playfab/mpswrapper:0.1.0 as wrapper
+
 FROM ${BASE_IMAGE}
 
 # CI system should set this to a hash or git revision of the build directory and it's contents to
@@ -69,5 +72,7 @@ COPY --chmod=755 files/auto /auto
 
 RUN dos2unix /start* /auto/*
 
-ENTRYPOINT [ "/start" ]
+COPY --from=wrapper /app/. /.
+
+ENTRYPOINT [ "/wrapper", "-g", "/start" ]
 HEALTHCHECK --start-period=1m --interval=5s --retries=24 CMD mc-health
